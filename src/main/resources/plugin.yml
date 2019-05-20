@@ -1,0 +1,7 @@
+name: TuxWarp
+version: ${project.version}
+main: me.kingtux.tuxwarp.TuxWarp
+api-version: 1.13
+authors: [KingTux]
+description: A simple to use warp plugin. Used to test to-bukkit
+website: https://kingtux.me
