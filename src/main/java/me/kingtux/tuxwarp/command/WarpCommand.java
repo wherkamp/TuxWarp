@@ -40,7 +40,7 @@ public class WarpCommand {
 
     @SubCommand(format = "create {name}")
     public void create(Player player, @CommandArgument("name") String name) {
-        if (s.length == 0) {
+        if (name ==null ) {
             player.sendMessage("No Name Provided");
             return;
         }
@@ -49,8 +49,8 @@ public class WarpCommand {
             return;
         }
 
-        Warp w = new Warp(s[0], player.getLocation(), player);
-        player.sendMessage("Warp Creating " + s[0]);
+        Warp w = new Warp(name, player.getLocation(), player);
+        player.sendMessage("Warp Creating " + name);
         warp.getWarpManager().getDao().create(w);
         player.sendMessage("Warp Created");
     }
