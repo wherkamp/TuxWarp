@@ -2,8 +2,10 @@ package me.kingtux.tuxwarp;
 
 import dev.nitrocommand.bukkit.BukkitCommandCore;
 import dev.nitrocommand.core.CommandCore;
-import me.kingtux.tuxjsql.core.TuxJSQL;
-import me.kingtux.tuxjsql.core.builders.SQLBuilder;
+
+import dev.nitrocommand.core.NitroCMD;
+import dev.tuxjsql.core.TuxJSQL;
+import dev.tuxjsql.core.TuxJSQLBuilder;
 import me.kingtux.tuxorm.TOConnection;
 import me.kingtux.tuxorm.bukkit.TOBukkit;
 import me.kingtux.tuxwarp.command.WarpCommand;
@@ -14,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Properties;
 
 public final class TuxWarp extends JavaPlugin {
@@ -21,24 +24,33 @@ public final class TuxWarp extends JavaPlugin {
     private BukkitCommandCore commandManager;
 
     private WarpManager warpManager;
+
     @Override
     public void onEnable() {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
+
         // Plugin startup logic
         saveDefaultConfig();
         saveResource("db.properties", false);
-        SQLBuilder builder = TuxJSQL.setup(getDBProperties());
-        System.out.println("builder.getDataSource().isClosed() = " + builder.getDataSource().isClosed());
+        TuxJSQL builder = TuxJSQLBuilder.create(getDBProperties());
+        try {
+            System.out.println("builder.getDataSource().isClosed() = " + builder.getConnection().isClosed());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
         connection = new TOConnection(builder);
         TOBukkit.registerSerializers(connection);
         commandManager = new BukkitCommandCore(this);
         commandManager.registerCommand(new WarpCommand(this));
+        TuxJSQL.setLogger(NitroCMD.LOGGER);
+        //TOConnection.logger = NitroCMD.LOGGER;
         warpManager = new WarpManager(this);
     }
 
     private Properties getDBProperties() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(new File(getDataFolder(),"db.properties")));
+            properties.load(new FileInputStream(new File(getDataFolder(), "db.properties")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,7 +63,7 @@ public final class TuxWarp extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        connection.getBuilder().getDataSource().close();
+        connection.close();
         // Plugin shutdown logic
     }
 
